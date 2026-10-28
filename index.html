@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+  <!-- APP BIOFLOK PRO — Versi: Fasa A (pembungkus app: boleh install di Android & iPhone) -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Bioflok Pro</title>
+  <meta name="description" content="Sistem pengurusan kolam tilapia bioflok TERAS Akuakultur">
+  <meta name="theme-color" content="#0F172A">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <!-- iPhone -->
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Bioflok Pro">
+  <style>
+    :root { --gelap: #0F172A; --biru: #0284C7; --langit: #38BDF8; --teks: #E2E8F0; --kelabu: #94A3B8; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: var(--gelap); color: var(--teks);
+                 font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; overflow: hidden; }
+    /* Ruang selamat untuk takuk/bar status iPhone bila dibuka dari skrin utama */
+    body { padding-top: env(safe-area-inset-top); }
+    #app { position: fixed; left: 0; right: 0; bottom: 0; top: env(safe-area-inset-top);
+           width: 100%; height: calc(100% - env(safe-area-inset-top)); border: 0; background: #F1F5F9; }
+
+    .skrin { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; align-items: center;
+             justify-content: center; gap: 14px; padding: 24px; text-align: center; background: var(--gelap);
+             transition: opacity .45s ease; }
+    .skrin.hilang { opacity: 0; pointer-events: none; }
+    .skrin img { width: 96px; height: 96px; border-radius: 22px; box-shadow: 0 10px 30px rgba(0,0,0,.45); }
+    .skrin h1 { margin: 0; font-size: 20px; font-weight: 900; letter-spacing: .3px; }
+    .skrin p { margin: 0; font-size: 14px; color: var(--kelabu); max-width: 320px; line-height: 1.5; }
+    .pusing { width: 34px; height: 34px; border-radius: 50%; border: 3px solid rgba(56,189,248,.25);
+              border-top-color: var(--langit); animation: pusing .9s linear infinite; }
+    @keyframes pusing { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .pusing { animation-duration: 3s; } }
+    .butang { border: 0; border-radius: 999px; padding: 11px 20px; font-weight: 800; font-size: 14px;
+              background: var(--biru); color: #fff; cursor: pointer; }
+    .butang.kedua { background: #1E293B; color: var(--teks); border: 1px solid #334155; }
+    .tersembunyi { display: none !important; }
+
+    /* Bar cadangan "Pasang App" (hanya bila dibuka dalam browser biasa) */
+    #barPasang { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 20;
+                 background: #0F172A; color: var(--teks); border: 1px solid #334155; border-radius: 18px;
+                 padding: 12px 14px; display: flex; gap: 12px; align-items: center; box-shadow: 0 12px 30px rgba(0,0,0,.4);
+                 font-size: 13px; line-height: 1.45; }
+    #barPasang img { width: 40px; height: 40px; border-radius: 10px; flex-shrink: 0; }
+    #barPasang .isi { flex: 1; }
+    #barPasang b { color: #fff; }
+    #barPasang .tutup { background: none; border: 0; color: var(--kelabu); font-size: 20px; padding: 4px 6px; cursor: pointer; }
+
+    /* Panel semak peranti (untuk ujian Fasa A) */
+    #panelSemak { position: fixed; inset: auto 12px calc(12px + env(safe-area-inset-bottom)) 12px; z-index: 30;
+                  background: #fff; color: #0F172A; border-radius: 18px; padding: 16px; font-size: 13px;
+                  box-shadow: 0 16px 40px rgba(0,0,0,.45); max-height: 75vh; overflow-y: auto; }
+    #panelSemak h2 { margin: 0 0 8px; font-size: 15px; }
+    #panelSemak table { width: 100%; border-collapse: collapse; }
+    #panelSemak td { padding: 6px 4px; border-bottom: 1px solid #E2E8F0; vertical-align: top; }
+    #panelSemak td:last-child { text-align: right; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <!-- Sistem sebenar (Google Apps Script) dimuatkan di sini -->
+  <iframe id="app" title="Sistem Bioflok Pro" allow="camera; clipboard-write" referrerpolicy="no-referrer-when-downgrade"></iframe>
+
+  <!-- Skrin pembuka -->
+  <div id="skrinMuat" class="skrin">
+    <img src="icon-192.png" alt="">
+    <h1>Bioflok Pro</h1>
+    <div class="pusing" aria-hidden="true"></div>
+    <p id="teksMuat">Memuatkan sistem...</p>
+    <button id="btnCubaLagi" class="butang tersembunyi" onclick="muatSemula()">Cuba Lagi</button>
+  </div>
+
+  <!-- Skrin luar talian / tetapan belum lengkap -->
+  <div id="skrinMasalah" class="skrin tersembunyi">
+    <img src="icon-192.png" alt="">
+    <h1 id="tajukMasalah">Tiada sambungan internet</h1>
+    <p id="teksMasalah">Sistem perlukan internet untuk baca & simpan data. Semak data mudah alih atau Wi-Fi.</p>
+    <button class="butang" onclick="muatSemula()">Cuba Lagi</button>
+  </div>
+
+  <!-- Cadangan pasang app -->
+  <div id="barPasang" class="tersembunyi" role="dialog" aria-label="Pasang app">
+    <img src="icon-192.png" alt="">
+    <div class="isi" id="teksPasang"></div>
+    <button id="btnPasang" class="butang tersembunyi" onclick="pasangApp()">Pasang</button>
+    <button class="tutup" aria-label="Tutup" onclick="tutupBarPasang()">×</button>
+  </div>
+
+  <!-- Panel semak peranti -->
+  <div id="panelSemak" class="tersembunyi">
+    <h2>📱 Semak Peranti</h2>
+    <table id="jadualSemak"></table>
+    <p style="color:#64748B;margin:10px 0">Ambil screenshot panel ini dan hantar kepada pembangun sistem.</p>
+    <button class="butang" onclick="document.getElementById('panelSemak').classList.add('tersembunyi')">Tutup</button>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const el = id => document.getElementById(id);
+    const simpan = { get: k => { try { return localStorage.getItem(k); } catch (e) { return null; } },
+                     set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} } };
+    const dalamApp = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const iPhone = /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+                   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const android = /android/i.test(navigator.userAgent);
+    const safari = /^((?!chrome|android|crios|fxios|edgios).)*safari/i.test(navigator.userAgent);
+    let pemasaMuat = null, acaraPasang = null, swOk = false;
+
+    // ---------- 1. Muatkan sistem ----------
+    function linkSah() {
+      return typeof APP_URL === 'string' && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/exec/.test(APP_URL);
+    }
+    function paparMasalah(tajuk, teks) {
+      el('tajukMasalah').textContent = tajuk;
+      el('teksMasalah').textContent = teks;
+      el('skrinMasalah').classList.remove('tersembunyi');
+      el('skrinMuat').classList.add('hilang');
+    }
+    function muatSistem() {
+      if (!linkSah()) {
+        return paparMasalah('Tetapan belum lengkap', 'Buka fail config.js dalam GitHub dan tampal link Web App (/exec) anda.');
+      }
+      if (!navigator.onLine) {
+        return paparMasalah('Tiada sambungan internet', 'Sistem perlukan internet untuk baca & simpan data. Semak data mudah alih atau Wi-Fi.');
+      }
+      el('skrinMasalah').classList.add('tersembunyi');
+      el('skrinMuat').classList.remove('hilang');
+      el('btnCubaLagi').classList.add('tersembunyi');
+      el('teksMuat').textContent = 'Memuatkan sistem...';
+      clearTimeout(pemasaMuat);
+      pemasaMuat = setTimeout(() => {
+        el('teksMuat').textContent = 'Sambungan agak perlahan. Tunggu sebentar atau cuba lagi.';
+        el('btnCubaLagi').classList.remove('tersembunyi');
+      }, 25000);
+      el('app').src = APP_URL;
+    }
+    el('app').addEventListener('load', () => {
+      if (!el('app').src) return;
+      clearTimeout(pemasaMuat);
+      setTimeout(() => el('skrinMuat').classList.add('hilang'), 600);
+    });
+    function muatSemula() { el('app').src = 'about:blank'; setTimeout(muatSistem, 100); }
+    window.addEventListener('offline', () => paparMasalah('Tiada sambungan internet', 'Sambungan terputus. Data yang belum disimpan perlu dihantar semula bila internet kembali.'));
+    window.addEventListener('online', () => { if (!el('skrinMasalah').classList.contains('tersembunyi')) muatSemula(); });
+
+    // ---------- 2. Service worker (wajib untuk install & notifikasi kelak) ----------
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').then(() => { swOk = true; }).catch(() => { swOk = false; });
+    }
+
+    // ---------- 3. Cadangan pasang app ----------
+    function tunjukBarPasang(html, adaButang) {
+      if (dalamApp || simpan.get('bioflokTutupBarPasang') === '1') return;
+      el('teksPasang').innerHTML = html;
+      el('btnPasang').classList.toggle('tersembunyi', !adaButang);
+      el('barPasang').classList.remove('tersembunyi');
+    }
+    function tutupBarPasang() { el('barPasang').classList.add('tersembunyi'); simpan.set('bioflokTutupBarPasang', '1'); }
+    window.addEventListener('beforeinstallprompt', e => {        // Android / Chrome
+      e.preventDefault();
+      acaraPasang = e;
+      tunjukBarPasang('<b>Pasang Bioflok Pro</b><br>Buka terus dari ikon di skrin telefon.', true);
+    });
+    async function pasangApp() {
+      if (!acaraPasang) return;
+      acaraPasang.prompt();
+      await acaraPasang.userChoice;
+      acaraPasang = null;
+      el('barPasang').classList.add('tersembunyi');
+    }
+    window.addEventListener('appinstalled', () => el('barPasang').classList.add('tersembunyi'));
+    if (iPhone && !dalamApp) {                                       // iPhone / iPad
+      setTimeout(() => tunjukBarPasang(safari
+        ? '<b>Pasang di iPhone:</b> tekan butang <b>Share</b> (kotak dengan anak panah ⬆️) di bawah, kemudian pilih <b>Add to Home Screen</b>.'
+        : '<b>Pasang di iPhone:</b> buka link ini dalam <b>Safari</b> dahulu, kemudian Share ⬆️ → <b>Add to Home Screen</b>.', false), 2500);
+    }
+
+    // ---------- 4. Semak peranti (ketuk 5 kali pada skrin pembuka, atau tambah #semak pada link) ----------
+    function semakPeranti() {
+      const ya = v => v ? '✅ Ya' : '❌ Tidak';
+      const baris = [
+        ['Jenis telefon', iPhone ? 'iPhone/iPad' : android ? 'Android' : 'Lain'],
+        ['Dibuka sebagai app (skrin utama)', ya(dalamApp)],
+        ['Service worker berdaftar', ya(swOk)],
+        ['Sokong notifikasi', ya('Notification' in window)],
+        ['Sokong push', ya('PushManager' in window)],
+        ['Kebenaran notifikasi', 'Notification' in window ? ({ granted: '✅ Dibenarkan', denied: '❌ Ditolak', default: 'Belum diminta' }[Notification.permission] || Notification.permission) : '-'],
+        ['Link sistem sah', ya(linkSah())],
+        ['Internet', ya(navigator.onLine)],
+        ['Versi app', 'Fasa A']
+      ];
+      el('jadualSemak').innerHTML = baris.map(b => `<tr><td>${b[0]}</td><td>${b[1]}</td></tr>`).join('');
+      el('panelSemak').classList.remove('tersembunyi');
+    }
+    let ketukan = 0, pemasaKetuk = null;
+    el('skrinMuat').addEventListener('click', () => {
+      ketukan++; clearTimeout(pemasaKetuk); pemasaKetuk = setTimeout(() => ketukan = 0, 1500);
+      if (ketukan >= 5) { ketukan = 0; semakPeranti(); }
+    });
+    if (location.hash === '#semak') setTimeout(semakPeranti, 1200);
+    // Kali pertama dibuka dari ikon skrin utama: papar panel semak sekali (untuk ujian Fasa A)
+    if (dalamApp && simpan.get('bioflokSemakDipapar') !== '1') {
+      setTimeout(() => { semakPeranti(); simpan.set('bioflokSemakDipapar', '1'); }, 3000);
+    }
+
+    muatSistem();
+  </script>
+</body>
+</html>
